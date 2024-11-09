@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "EarthMC Vote Party Notifier",
+  "version": "1.0",
+  "description": "Get notified at different milestones of the Vote Party on EarthMC",
+  "permissions": ["notifications", "alarms"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "128": "images/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
