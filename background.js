@@ -108,13 +108,13 @@ async function checkVoteParty() {
     );
 
     notifyUser(
-      "There was an error retrieving vote party data. Retrying in 5 minutes."
+      "There was an error retrieving vote party data. Retrying in 30 minutes."
     );
     sendNtfyNotification(
-      "There was an error retrieving vote party data. Retrying in 5 minutes."
+      "There was an error retrieving vote party data. Retrying in 30 minutes."
     );
 
-    scheduleNextCheck(5); // Retry after 5 minutes if there's an error
+    scheduleNextCheck(30); // Retry after 5 minutes if there's an error
   }
 }
 
