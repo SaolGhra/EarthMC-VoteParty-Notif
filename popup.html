@@ -2,11 +2,57 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vote Party Notifier</title>
+    <title>EarthMC Info</title>
+    <link rel="stylesheet" href="popup/popup.css" />
   </head>
   <body>
-    <h1>Vote Party Notifier</h1>
-    <p>This extension will notify you when the vote party gets close!</p>
+    <div class="container">
+      <!-- Server Stats Card -->
+      <div class="card">
+        <h3>Server Status</h3>
+        <div class="stat-grid">
+          <div class="stat-item">
+            <div class="stat-label">Online Players</div>
+            <div class="stat-value" id="online-players">--</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Total Towns</div>
+            <div class="stat-value" id="total-towns">--</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Total Nations</div>
+            <div class="stat-value" id="total-nations">--</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Total Residents</div>
+            <div class="stat-value" id="total-residents">--</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vote Party Card -->
+      <div class="card">
+        <h3>Vote Party Progress</h3>
+        <div class="vote-progress">
+          <div class="vote-bar" id="vote-bar"></div>
+        </div>
+        <p id="vote-text">-- votes remaining</p>
+      </div>
+
+      <!-- Search Card -->
+      <div class="card">
+        <div class="tabs">
+          <div class="tab active" data-type="towns">Towns</div>
+          <div class="tab" data-type="players">Players</div>
+          <div class="tab" data-type="nations">Nations</div>
+        </div>
+        <div class="search-container">
+          <input type="text" id="search-input" placeholder="Search..." />
+          <button id="search-btn">Search</button>
+        </div>
+        <div class="search-results" id="search-results"></div>
+      </div>
+    </div>
+    <script src="popup/popup.js"></script>
   </body>
 </html>

@@ -12,14 +12,17 @@ function notifyUser(message) {
 // Function to send an ntfy notification
 async function sendNtfyNotification(message) {
   try {
-    await fetch("https://ntfy.saolghra.co.uk/earthmc", {
-      mode: "no-cors",
+    const response = await fetch("https://ntfy.saolghra.co.uk/earthmc", {
       method: "POST",
       headers: {
         "Content-Type": "text/plain",
       },
-      body: message, // Sending the message as plain text
+      body: message,
     });
+
+    if (!response.ok) {
+      throw new Error(`NTFY HTTP error! status: ${response.status}`);
+    }
     console.log(`ntfy notification sent: ${message}`);
   } catch (error) {
     console.error("Error sending ntfy notification:", error);
@@ -35,7 +38,10 @@ function scheduleNextCheck(minutes) {
 async function checkVoteParty() {
   try {
     const response = await fetch("https://api.earthmc.net/v3/aurora/", {
-      mode: "no-cors",
+      headers: {
+        Accept: "application/json",
+      },
+      credentials: "omit", // Explicitly opt out of sending credentials
     });
 
     if (!response.ok) {
@@ -44,60 +50,35 @@ async function checkVoteParty() {
 
     const data = await response.json();
 
-    if (
-      !data ||
-      !data.voteParty ||
-      typeof data.voteParty.numRemaining !== "number"
-    ) {
+    // Validate the response data structure
+    if (!data?.voteParty?.numRemaining) {
       throw new Error("Invalid data format received from API");
     }
 
     const numRemaining = data.voteParty.numRemaining;
-
     console.log(`Votes remaining: ${numRemaining}`);
 
-    if (numRemaining <= 10) {
-      notifyUser("Vote party is imminent! Only 10 votes remaining!");
-      sendNtfyNotification("Vote party is imminent! Only 10 votes remaining!");
-      scheduleNextCheck(1);
-    } else if (numRemaining <= 20) {
-      notifyUser("Vote party is very close! Only 20 votes remaining!");
-      sendNtfyNotification(
-        "Vote party is very close! Only 20 votes remaining!"
-      );
-      scheduleNextCheck(1);
-    } else if (numRemaining <= 30) {
-      notifyUser("Vote party is approaching! Only 30 votes remaining!");
-      sendNtfyNotification(
-        "Vote party is approaching! Only 30 votes remaining!"
-      );
-      scheduleNextCheck(1);
-    } else if (numRemaining <= 40) {
-      notifyUser("Vote party is near! Only 40 votes remaining!");
-      sendNtfyNotification("Vote party is near! Only 40 votes remaining!");
-      scheduleNextCheck(1);
-    } else if (numRemaining <= 50) {
-      notifyUser("Vote party is near! Only 50 votes remaining!");
-      sendNtfyNotification("Vote party is near! Only 50 votes remaining!");
-      scheduleNextCheck(1);
-    } else if (numRemaining <= 100) {
-      notifyUser("Vote party is getting closer! Only 100 votes remaining!");
-      sendNtfyNotification(
-        "Vote party is getting closer! Only 100 votes remaining!"
-      );
-      scheduleNextCheck(5);
-    } else if (numRemaining <= 250) {
-      notifyUser("Vote party milestone reached! Only 250 votes remaining!");
-      sendNtfyNotification(
-        "Vote party milestone reached! Only 250 votes remaining!"
-      );
-      scheduleNextCheck(10);
-    } else if (numRemaining <= 500) {
-      notifyUser("Halfway to vote party! Only 500 votes remaining!");
-      scheduleNextCheck(30);
-    } else if (numRemaining <= 4500) {
-      notifyUser("Vote party milestone reached! Only 4500 votes remaining!");
-      scheduleNextCheck(30);
+    // Define notification thresholds and their configurations
+    const thresholds = [
+      { limit: 10, message: "Vote party is imminent!", delay: 1 },
+      { limit: 20, message: "Vote party is very close!", delay: 1 },
+      { limit: 30, message: "Vote party is approaching!", delay: 1 },
+      { limit: 40, message: "Vote party is near!", delay: 1 },
+      { limit: 50, message: "Vote party is near!", delay: 1 },
+      { limit: 100, message: "Vote party is getting closer!", delay: 5 },
+      { limit: 250, message: "Vote party milestone reached!", delay: 10 },
+      { limit: 500, message: "Halfway to vote party!", delay: 30 },
+      { limit: 4500, message: "Vote party milestone reached!", delay: 30 },
+    ];
+
+    // Find the first threshold that applies
+    const threshold = thresholds.find((t) => numRemaining <= t.limit);
+
+    if (threshold) {
+      const message = `${threshold.message} Only ${numRemaining} votes remaining!`;
+      notifyUser(message);
+      sendNtfyNotification(message);
+      scheduleNextCheck(threshold.delay);
     } else {
       scheduleNextCheck(30);
     }
@@ -107,26 +88,20 @@ async function checkVoteParty() {
       error.message || error
     );
 
-    notifyUser(
-      "There was an error retrieving vote party data. Retrying in 30 minutes."
-    );
-    sendNtfyNotification(
-      "There was an error retrieving vote party data. Retrying in 30 minutes."
-    );
-
-    scheduleNextCheck(30); // Retry after 5 minutes if there's an error
+    const errorMessage =
+      "There was an error retrieving vote party data. Retrying in 30 minutes.";
+    notifyUser(errorMessage);
+    sendNtfyNotification(errorMessage);
+    scheduleNextCheck(30);
   }
 }
 
-// Set up the alarm listener to trigger the checkVoteParty function
+// Set up the alarm listener
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === "checkVoteParty") {
     checkVoteParty();
   }
 });
 
-// Initial setup: Start checking immediately
+// Initial check
 checkVoteParty();
-
-// Optional: Test the notification when the extension is loaded
-// testNotification();
