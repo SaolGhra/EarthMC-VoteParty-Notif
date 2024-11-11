@@ -1,4 +1,3 @@
-// Function to send a notification via Chrome notifications API
 function notifyUser(message) {
   chrome.notifications.create({
     type: "basic",
@@ -9,7 +8,6 @@ function notifyUser(message) {
   });
 }
 
-// Function to send an ntfy notification
 async function sendNtfyNotification(message) {
   try {
     const response = await fetch("https://ntfy.saolghra.co.uk/earthmc", {
@@ -29,19 +27,17 @@ async function sendNtfyNotification(message) {
   }
 }
 
-// Function to schedule the next vote check
 function scheduleNextCheck(minutes) {
   chrome.alarms.create("checkVoteParty", { delayInMinutes: minutes });
 }
 
-// Function to check the current number of votes remaining
 async function checkVoteParty() {
   try {
     const response = await fetch("https://api.earthmc.net/v3/aurora/", {
       headers: {
         Accept: "application/json",
       },
-      credentials: "omit", // Explicitly opt out of sending credentials
+      credentials: "omit",
     });
 
     if (!response.ok) {
@@ -50,7 +46,6 @@ async function checkVoteParty() {
 
     const data = await response.json();
 
-    // Validate the response data structure
     if (!data?.voteParty?.numRemaining) {
       throw new Error("Invalid data format received from API");
     }
@@ -58,21 +53,65 @@ async function checkVoteParty() {
     const numRemaining = data.voteParty.numRemaining;
     console.log(`Votes remaining: ${numRemaining}`);
 
-    // Define notification thresholds and their configurations
     const thresholds = [
-      { limit: 10, message: "Vote party is imminent!", delay: 1 },
-      { limit: 20, message: "Vote party is very close!", delay: 1 },
-      { limit: 30, message: "Vote party is approaching!", delay: 1 },
-      { limit: 40, message: "Vote party is near!", delay: 1 },
-      { limit: 50, message: "Vote party is near!", delay: 1 },
-      { limit: 100, message: "Vote party is getting closer!", delay: 5 },
-      { limit: 250, message: "Vote party milestone reached!", delay: 10 },
-      { limit: 500, message: "Halfway to vote party!", delay: 30 },
-      { limit: 4500, message: "Vote party milestone reached!", delay: 30 },
+      {
+        limit: 10,
+        message: "Vote party is imminent!",
+        delay: 1,
+        isMilestone: true,
+      },
+      {
+        limit: 20,
+        message: "Vote party is very close!",
+        delay: 1,
+        isMilestone: true,
+      },
+      {
+        limit: 30,
+        message: "Vote party is approaching!",
+        delay: 1,
+        isMilestone: true,
+      },
+      {
+        limit: 40,
+        message: "Vote party is near!",
+        delay: 1,
+        isMilestone: true,
+      },
+      {
+        limit: 50,
+        message: "Vote party is near!",
+        delay: 1,
+        isMilestone: true,
+      },
+      {
+        limit: 100,
+        message: "Vote party is getting closer!",
+        delay: 5,
+        isMilestone: true,
+      },
+      {
+        limit: 250,
+        message: "Vote party milestone reached!",
+        delay: 30,
+        isMilestone: true,
+      },
+      {
+        limit: 500,
+        message: "Halfway to vote party!",
+        delay: 30,
+        isMilestone: true,
+      },
+      {
+        limit: 2500,
+        message: "Vote party milestone reached!",
+        delay: 30,
+        isMilestone: true,
+      },
     ];
 
-    // Find the first threshold that applies
     const threshold = thresholds.find((t) => numRemaining <= t.limit);
+    const currentMinute = new Date().getMinutes();
 
     if (threshold) {
       const message = `${threshold.message} Only ${numRemaining} votes remaining!`;
@@ -80,7 +119,18 @@ async function checkVoteParty() {
       sendNtfyNotification(message);
       scheduleNextCheck(threshold.delay);
     } else {
-      scheduleNextCheck(30);
+      if (numRemaining <= 100) {
+        scheduleNextCheck(5);
+      } else {
+        const minutesToNextHour = 60 - currentMinute;
+        scheduleNextCheck(minutesToNextHour);
+      }
+
+      if (currentMinute === 0) {
+        const message = `Vote Party Update: ${numRemaining} votes remaining`;
+        notifyUser(message);
+        sendNtfyNotification(message);
+      }
     }
   } catch (error) {
     console.error(
@@ -96,12 +146,13 @@ async function checkVoteParty() {
   }
 }
 
-// Set up the alarm listener
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === "checkVoteParty") {
     checkVoteParty();
   }
 });
 
-// Initial check
+const minutesToNextHour = 60 - new Date().getMinutes();
+scheduleNextCheck(minutesToNextHour);
+
 checkVoteParty();
