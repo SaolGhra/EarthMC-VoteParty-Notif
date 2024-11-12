@@ -103,7 +103,7 @@ async function checkVoteParty() {
         isMilestone: true,
       },
       {
-        limit: 2500,
+        limit: 1000,
         message: "Vote party milestone reached!",
         delay: 30,
         isMilestone: true,
