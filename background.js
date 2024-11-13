@@ -8,25 +8,6 @@ function notifyUser(message) {
   });
 }
 
-async function sendNtfyNotification(message) {
-  try {
-    const response = await fetch("https://ntfy.saolghra.co.uk/earthmc", {
-      method: "POST",
-      headers: {
-        "Content-Type": "text/plain",
-      },
-      body: message,
-    });
-
-    if (!response.ok) {
-      throw new Error(`NTFY HTTP error! status: ${response.status}`);
-    }
-    console.log(`ntfy notification sent: ${message}`);
-  } catch (error) {
-    console.error("Error sending ntfy notification:", error);
-  }
-}
-
 function scheduleNextCheck(minutes) {
   chrome.alarms.create("checkVoteParty", { delayInMinutes: minutes });
 }
@@ -102,12 +83,6 @@ async function checkVoteParty() {
         delay: 30,
         isMilestone: true,
       },
-      {
-        limit: 1000,
-        message: "Vote party milestone reached!",
-        delay: 30,
-        isMilestone: true,
-      },
     ];
 
     const threshold = thresholds.find((t) => numRemaining <= t.limit);
@@ -116,7 +91,6 @@ async function checkVoteParty() {
     if (threshold) {
       const message = `${threshold.message} Only ${numRemaining} votes remaining!`;
       notifyUser(message);
-      sendNtfyNotification(message);
       scheduleNextCheck(threshold.delay);
     } else {
       if (numRemaining <= 100) {
@@ -129,7 +103,6 @@ async function checkVoteParty() {
       if (currentMinute === 0) {
         const message = `Vote Party Update: ${numRemaining} votes remaining`;
         notifyUser(message);
-        sendNtfyNotification(message);
       }
     }
   } catch (error) {
@@ -141,7 +114,6 @@ async function checkVoteParty() {
     const errorMessage =
       "There was an error retrieving vote party data. Retrying in 30 minutes.";
     notifyUser(errorMessage);
-    sendNtfyNotification(errorMessage);
     scheduleNextCheck(30);
   }
 }

@@ -3,7 +3,7 @@
   "name": "EarthMC Vote Party Notifier",
   "version": "1.0",
   "description": "Get notified at different milestones of the Vote Party on EarthMC",
-  "permissions": ["notifications", "alarms", "https://api.earthmc.net/*"],
+  "permissions": ["notifications", "alarms"],
   "host_permissions": ["https://api.earthmc.net/*"],
   "background": {
     "service_worker": "background.js"
