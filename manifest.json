@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "EarthMC Vote Party Notifier",
+  "name": "EarthMC VoteParty Notifier",
   "version": "1.1.0",
   "description": "Get notified at different milestones of the Vote Party on EarthMC",
   "permissions": ["notifications", "alarms"],
