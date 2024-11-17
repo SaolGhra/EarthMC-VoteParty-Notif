@@ -62,6 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tab.classList.add("active");
       currentSearchType = tab.dataset.type;
       searchResults.innerHTML = "";
+      searchInput.value = "";
     });
   });
 
