@@ -1,4 +1,8 @@
 /* Base styles */
+::-webkit-scrollbar {
+  width: 0px;
+}
+
 body {
   width: 400px;
   padding: 16px;
@@ -93,7 +97,9 @@ button:hover {
 .result-item {
   padding: 8px;
   border-bottom: 1px solid #475569;
-  /* cursor: pointer; */
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .result-item a {
@@ -126,4 +132,12 @@ button:hover {
 
 .tab.active {
   background: #3b82f6;
+}
+
+.vote-button {
+  width: 100%;
+}
+
+.vote-button:hover {
+  background: #2563eb;
 }
