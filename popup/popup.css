@@ -1,4 +1,8 @@
 /* Base styles */
+::-webkit-scrollbar {
+  width: 0px;
+}
+
 body {
   width: 400px;
   padding: 16px;
@@ -93,7 +97,9 @@ button:hover {
 .result-item {
   padding: 8px;
   border-bottom: 1px solid #475569;
-  /* cursor: pointer; */
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .result-item a {
@@ -126,4 +132,50 @@ button:hover {
 
 .tab.active {
   background: #3b82f6;
+}
+
+.vote-button {
+  width: 100%;
+}
+
+.vote-button:hover {
+  background: #2563eb;
+}
+
+.vote-button:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+.vote-button:disabled:hover {
+  background: #94a3b8;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.modal-content {
+  width: 80%;
+}
+
+.info {
+  background-color: unset;
+  padding: unset;
+  border: unset;
+  border-radius: unset;
+  width: unset;
+  height: unset;
+  margin-left: 8px;
+  text-decoration: underline;
 }

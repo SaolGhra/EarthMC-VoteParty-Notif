@@ -5,12 +5,46 @@ document.addEventListener("DOMContentLoaded", () => {
   const totalResidents = document.getElementById("total-residents");
   const voteBar = document.getElementById("vote-bar");
   const voteText = document.getElementById("vote-text");
+  const voteButton = document.querySelector('.vote-button');
+  const infoButton = document.querySelector('.info');
   const searchInput = document.getElementById("search-input");
   const searchBtn = document.getElementById("search-btn");
   const searchResults = document.getElementById("search-results");
   const tabs = document.querySelectorAll(".tab");
 
   let currentSearchType = "towns";
+  let minecraftUsername = '';
+
+  infoButton.addEventListener('click', () => {
+    const modal = document.createElement('div');
+    modal.classList.add('modal');
+    modal.innerHTML = `
+      <div class="modal-content">
+        <h3>Enter your Minecraft Username</h3>
+        <input type="text" id="minecraft-username" placeholder="Minecraft Username">
+        <button id="save-username">Save</button>
+        <p>This saves your username using cookies. If you encounter issues with voting, please ensure that your username is saved correctly.</p>
+      </div>  
+    `;
+    document.body.appendChild(modal);
+
+    let saveButton = modal.querySelector('#save-username');
+    let usernameInput = modal.querySelector('#minecraft-username');
+
+    saveButton.addEventListener('click', () => {
+      minecraftUsername = usernameInput.value;
+      document.cookie = `minecraftUsername=${minecraftUsername}; path=/; max-age=31536000`; // Save for 1 year
+      voteButton.disabled = false
+      modal.remove();
+    });
+  });
+
+  voteButton.disabled = true;
+
+  if (document.cookie && document.cookie.includes('minecraftUsername')) {
+    // minecraftUsername = document.cookie.split('=')[1];
+    voteButton.disabled = false
+  }
 
   searchBtn.addEventListener("click", () => {
     searchEntities(searchInput.value);
@@ -29,6 +63,11 @@ document.addEventListener("DOMContentLoaded", () => {
       currentSearchType = tab.dataset.type;
       searchResults.innerHTML = "";
     });
+  });
+
+  voteButton.addEventListener('click', () => {
+    chrome.tabs.create({ url: `https://minecraftservers.org/vote/383495?username=${minecraftUsername}` });
+    chrome.tabs.create({ url: `https://minecraft-mp.com/server/332214/vote/?username=${minecraftUsername}` });
   });
 
   async function fetchServerStats() {
@@ -143,23 +182,23 @@ document.addEventListener("DOMContentLoaded", () => {
           const mapLink = coordinates
             ? `<a href="https://map.earthmc.net/?zoom=4&x=${Math.round(
                 coordinates.x
-              )}&z=${Math.round(coordinates.z)}" target="_blank">View on Map</a><br>`
+              )}&z=${Math.round(coordinates.z)}" target="_blank">View on Map</a>`
             : "";
 
           content += `
-            Capital: ${result.capital?.name || "None"}<br>
-            King: ${parseMinecraftColors(result.king?.name || "None")}<br>
-            Board: ${result.board || "None"}<br>
-            Towns: ${result.stats?.numTowns || 0}<br>
-            Residents: ${result.stats?.numResidents || 0}<br>
-            Balance: ${result.stats?.balance?.toLocaleString() || 0} Gold<br>
-            Allies: ${result.stats?.numAllies || 0}<br>
-            Enemies: ${result.stats?.numEnemies || 0}<br>
-            Founded: ${
+            <span>Capital: ${result.capital?.name || "None"}</span>
+            <span>King: ${parseMinecraftColors(result.king?.name || "None")}</span>
+            <span>Board: ${result.board || "None"}</span>
+            <span>Towns: ${result.stats?.numTowns || 0}</span>
+            <span>Residents: ${result.stats?.numResidents || 0}</span>
+            <span>Balance: ${result.stats?.balance?.toLocaleString() || 0} Gold</span>
+            <span>Allies: ${result.stats?.numAllies || 0}</span>
+            <span>Enemies: ${result.stats?.numEnemies || 0}</span>
+            <span>Founded: ${
               result.timestamps?.registered
                 ? new Date(result.timestamps.registered).toLocaleDateString()
                 : "Unknown"
-            }<br>
+            }</span>
             ${mapLink}
           `;
         } else if (currentSearchType === "towns") {
@@ -167,62 +206,63 @@ document.addEventListener("DOMContentLoaded", () => {
           const mapLink = coordinates
             ? `<a href="https://map.earthmc.net/?zoom=4&x=${Math.round(
                 coordinates.x
-              )}&z=${Math.round(coordinates.z)}" target="_blank">View on Map</a><br>`
+              )}&z=${Math.round(coordinates.z)}" target="_blank">View on Map</a>`
             : "";
 
           content += `
-            Mayor: ${parseMinecraftColors(result.mayor?.name || "None")}<br>
-            Nation: ${parseMinecraftColors(result.nation?.name || "None")}<br>
-            Board: ${result.board || "None"}<br>
-            Residents: ${result.stats?.numResidents || 0}<br>
-            Balance: ${result.stats?.balance?.toLocaleString() || 0} Gold<br>
-            Town Blocks: ${result.stats?.numTownBlocks || 0} / ${
+            <span>Mayor: ${parseMinecraftColors(result.mayor?.name || "None")}</span>
+            <span>Nation: ${parseMinecraftColors(result.nation?.name || "None")}</span>
+            <span>Board: ${result.board || "None"}</span>
+            <span>Residents: ${result.stats?.numResidents || 0}</span>
+            <span>Balance: ${result.stats?.balance?.toLocaleString() || 0} Gold</span>
+            <span>Town Blocks: ${result.stats?.numTownBlocks || 0} / ${
             result.stats?.maxTownBlocks || 0
-          }<br>
-            Coordinates: ${
+          }</span>
+            <span>Coordinates: ${
               coordinates
                 ? `x: ${Math.round(coordinates.x)}, z: ${Math.round(
                     coordinates.z
                   )}`
                 : "Unknown"
-            }<br>
-            Status: ${result.status?.isOpen ? "Open" : "Closed"}${
+            }</span>
+            <span>Status: ${result.status?.isOpen ? "Open" : "Closed"}${
             result.status?.isPublic ? ", Public" : ""
-          }${result.status?.isCapital ? ", Capital" : ""}<br>
-            Founded: ${
+          }</span>
+          <span>${result.status?.isCapital ? ", Capital" : ""}</span>
+          <span>Founded: ${
               result.timestamps?.registered
                 ? new Date(result.timestamps.registered).toLocaleDateString()
                 : "Unknown"
-            }<br>
+            }</span>
             ${mapLink}
           `;
         } else if (currentSearchType === "players") {
           const formattedName = parseMinecraftColors(result.formattedName || result.name);
 
-          content = `<strong>${formattedName}</strong><br>`;
+          content = `<strong>${formattedName}</strong>`;
           content += `
-            Town: ${(result.town?.name || "None")}<br>
-            Nation: ${(result.nation?.name || "None")}<br>
-            Balance: ${result.stats?.balance?.toLocaleString() || 0} Gold<br>
-            Friends: ${result.stats?.numFriends || 0}<br>
-            Status: ${result.status?.isOnline ? "🟢 Online" : "🔴 Offline"}${
+            <span>Town: ${(result.town?.name || "None")}</span>
+            <span>Nation: ${(result.nation?.name || "None")}</span>
+            <span>Balance: ${result.stats?.balance?.toLocaleString() || 0} Gold</span>
+            <span>Friends: ${result.stats?.numFriends || 0}</span>
+            <span>Status: ${result.status?.isOnline ? "🟢 Online" : "🔴 Offline"}${
             result.status?.isMayor ? ", Mayor" : ""
-          }${result.status?.isKing ? ", King" : ""}<br>
-            Town Rank: ${result.status?.isMayor ? "Mayor" : (result.ranks?.townRanks?.join(", ") || "None")}<br>
-            Nation Rank: ${result.ranks?.nationRanks?.join(", ") || "None"}<br>
-            Joined: ${
+          }${result.status?.isKing ? ", King" : ""}</span>
+            <span>Town Rank: ${result.status?.isMayor ? "Mayor" : (result.ranks?.townRanks?.join(", ") || "None")}</span>
+            <span>Nation Rank: ${result.ranks?.nationRanks?.join(", ") || "None"}</span>
+            <span>Joined: ${
               result.timestamps?.registered
                 ? new Date(result.timestamps.registered).toLocaleDateString()
                 : "Unknown"
-            }<br>
-            Last Online: ${
+            }</span>
+            <span>Last Online: ${
               result.timestamps?.lastOnline
                 ? new Date(result.timestamps.lastOnline).toLocaleDateString()
                 : "Unknown"
-            }
+            }</span>
           `;
           if (result.about) {
-            content += `<br>About: ${parseMinecraftColors(result.about)}<br>`;
+            content += `<br>About: ${parseMinecraftColors(result.about)}`;
           }
         }
 
