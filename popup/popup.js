@@ -6,13 +6,45 @@ document.addEventListener("DOMContentLoaded", () => {
   const voteBar = document.getElementById("vote-bar");
   const voteText = document.getElementById("vote-text");
   const voteButton = document.querySelector('.vote-button');
+  const infoButton = document.querySelector('.info');
   const searchInput = document.getElementById("search-input");
   const searchBtn = document.getElementById("search-btn");
   const searchResults = document.getElementById("search-results");
   const tabs = document.querySelectorAll(".tab");
 
   let currentSearchType = "towns";
-  const minecraftUsername = "makeoutcy";
+  let minecraftUsername = '';
+
+  infoButton.addEventListener('click', () => {
+    const modal = document.createElement('div');
+    modal.classList.add('modal');
+    modal.innerHTML = `
+      <div class="modal-content">
+        <h3>Enter your Minecraft Username</h3>
+        <input type="text" id="minecraft-username" placeholder="Minecraft Username">
+        <button id="save-username">Save</button>
+        <p>This saves your username using cookies. If you encounter issues with voting, please ensure that your username is saved correctly.</p>
+      </div>  
+    `;
+    document.body.appendChild(modal);
+
+    let saveButton = modal.querySelector('#save-username');
+    let usernameInput = modal.querySelector('#minecraft-username');
+
+    saveButton.addEventListener('click', () => {
+      minecraftUsername = usernameInput.value;
+      document.cookie = `minecraftUsername=${minecraftUsername}; path=/; max-age=31536000`; // Save for 1 year
+      voteButton.disabled = false
+      modal.remove();
+    });
+  });
+
+  voteButton.disabled = true;
+
+  if (document.cookie && document.cookie.includes('minecraftUsername')) {
+    // minecraftUsername = document.cookie.split('=')[1];
+    voteButton.disabled = false
+  }
 
   searchBtn.addEventListener("click", () => {
     searchEntities(searchInput.value);
