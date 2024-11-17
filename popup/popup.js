@@ -268,6 +268,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         div.innerHTML = content;
         searchResults.appendChild(div);
+
+        if (currentSearchType === "players") {
+          const userSkin = document.createElement('img');
+          userSkin.src = `https://mc-heads.net/body/${result.name}/left`;
+          userSkin.classList.add('user-skin');
+          searchResults.appendChild(userSkin);
+        }
       });
     } catch (error) {
       console.error("Error:", error);
